@@ -1,0 +1,76 @@
+from scipy.misc import imread
+from wordcloud import WordCloud
+import jieba.posseg as pseg
+import matplotlib.pyplot as plt
+from scipy.misc import imread
+import re
+
+
+def createText():
+
+    record_file = open('wechat_data_leini.txt', 'r', encoding='utf-8')
+    ignore_file = open('wechat_ignore.txt','r', encoding='utf-8')
+    
+    line_list = []
+
+    for line in record_file:
+ 
+        if not re.match('\s',line):  #除去消息发送者信息，方式：滤去开头非空格的行
+        #re.match() 能够匹配出以xxx开头的字符串
+            continue
+
+        line=re.sub("[\W_A-Za-z0-9]","",line)#除去非中文（英文、数字、标点等）
+        #resub(pattern, repl, string) \W 匹配任意不是字母，数字，下划线，汉字的字符
+
+        if line.isspace(): #除去空行
+
+            continue
+
+        line_list.append(line.strip()) #移除字符串头尾指定的字符（默认为空格或换行符）或字符序列,不能删除中间部分的字符
+     
+    #print(line_list)
+#createText()
+
+
+    stop_words = set(line.strip() for line in ignore_file) #set()创造一个不重复的元素集
+
+    word_list = []
+
+    for line in line_list:
+
+        word_map = pseg.cut(line)
+
+        for word, type in word_map:
+
+            if word not in stop_words and type == 'n':
+
+                word_list.append(word)
+
+    record_file.close()
+
+    ignore_file.close()
+    
+    return ' '.join(word_list)
+
+    #print(set(word_list))
+#createText()
+
+def createCloud(text):
+
+    mask_img = imread('jerry.jpg')
+
+    wordCloud = WordCloud(font_path='msyh.ttc', background_color='#fff', mask=mask_img, max_words=120).generate(text)
+
+    #plt.imshow(wordCloud.recolor(color_func=i_colors))
+    plt.imshow(wordCloud)
+
+    plt.axis('off')
+
+    plt.show()
+
+
+if __name__ == '__main__':
+
+    txt = createText()
+
+    createCloud(txt)
